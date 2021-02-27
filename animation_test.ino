@@ -14,12 +14,13 @@ U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R2, SCL, SDA, U8X8_PIN_NONE);
 
 #define hfrog_width 128
 #define hfrog_height 64
-const int fps = 200; //3-4 ish fps
+const int fps = 0; //3-4 ish fps
 const int display_width = 164;
+const int crit_temp = 20;
 int animate_frame = 0;
 int current_pos = -display_width;
-int move_int = 5; //movement interval
-int delayTime = 2000;
+int move_int = 20; //movement interval
+int delayTime = 2000; //for flower
 float temp_hum[2] = {0};
 
 char button = 6;
@@ -471,49 +472,39 @@ void setup(void) {
 
 void loop() {
   if (tick.isExpired()) {
-    drawFrogAnimate();
-    if (animate_frame == 0)
-    {
-       animate_frame++;
-    }
-    else if (animate_frame == 1)
-    {
-      animate_frame--;
-    }
   current_pos += move_int;
-  if(current_pos > 2*display_width)
-  {
-    current_pos = .9*display_width;
-  }
-  tick.repeat();
-  }
-
-  if (digitalRead(button) == HIGH)
-  {
-    buttonPress();
-  }
-  if (!dht.readTempAndHumidity(temp_hum))
-  {
-    if (temp_hum[1] < 15)
+    if(current_pos > 2*display_width)
     {
-      //cold!
-      u8g2.firstPage();
-      do {
-        u8g2.drawXBMP(0,0, hfrog_width, hfrog_height, bg); //the background of white
-        switch (animate_frame) {
-          case 0:
-            u8g2.drawXBMP(current_pos,0, hfrog_width, hfrog_height, coldFrog1);
-            break;
-          case 1: 
-            u8g2.drawXBMP(current_pos,0, hfrog_width, hfrog_height, coldFrog2);
-            break;
-        }
+      current_pos = .9*display_width;
     }
-    while(u8g2.nextPage());
+    if (digitalRead(button) == HIGH)
+    {
+      buttonPress();
+    }
+    if (!dht.readTempAndHumidity(temp_hum))
+    {
+      if (temp_hum[1] < crit_temp)
+      {
+        coldAnimate();
+      } 
+      else
+      {
+        drawFrogAnimate();
+      } 
+      if (animate_frame == 0)
+      {
+         animate_frame++;
+      }
+      else if (animate_frame == 1)
+      {
+        animate_frame--;
+      }
+    }
+    tick.repeat();
   }
 
-}
-}
+} 
+
 
 void drawFrogAnimate() {
   u8g2.firstPage();
@@ -529,6 +520,23 @@ void drawFrogAnimate() {
     }
   }
   while(u8g2.nextPage());
+}
+
+void coldAnimate() {
+//cold!
+u8g2.firstPage();
+do {
+  u8g2.drawXBMP(0,0, hfrog_width, hfrog_height, bg); //the background of white
+  switch (animate_frame) {
+    case 0:
+      u8g2.drawXBMP(current_pos,0, hfrog_width, hfrog_height, coldFrog1);
+      break;
+    case 1: 
+      u8g2.drawXBMP(current_pos,0, hfrog_width, hfrog_height, coldFrog2);
+      break;
+      }
+    }
+    while(u8g2.nextPage());
 }
 
 void buttonPress() {
