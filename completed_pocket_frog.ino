@@ -568,7 +568,6 @@ void loop() {
     }
   
   if (tick.isExpired()) {
-  //drawFrogAnimate();
     if(current_pos > 2*display_width)
     {
       current_pos = .9*display_width;
@@ -577,18 +576,12 @@ void loop() {
     {
       buttonPress();
     }
-    if (analogRead(sound) > 500)
+    if (analogRead(sound) >  500)
     {
       loudFrog();
     }
-    /*else
-    {
-       drawFrogAnimate();
-    }*/
-
-    //temp and hum sensor is very slow :(
     
-    if (LIS.getTemperature() < 15)
+    if (LIS.getTemperature() < 15) //degrees c
     {
        coldAnimate();
     }
